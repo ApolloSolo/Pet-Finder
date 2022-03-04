@@ -10,10 +10,14 @@
         <title></title>
         <meta name="description" content="">
         <meta name="viewport" content="width=device-width, initial-scale=1">
+        <script src='https://api.mapbox.com/mapbox-gl-js/v2.6.1/mapbox-gl.js'></script>
+        <link href='https://api.mapbox.com/mapbox-gl-js/v2.6.1/mapbox-gl.css' rel='stylesheet' />
         <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-        <link rel="stylesheet" href="">
+        <link rel="stylesheet" href="styles.css">
     </head>
     <body>
+
+        <div id="map"></div>
         
         <div>
             <button id="my-location">Pets Near Me</button>
@@ -25,6 +29,8 @@
             </form>
         </div>
         
+        
         <script src="app.js" async defer></script>
+        <script src="/js/clusterMap.js"></script>
     </body>
 </html>

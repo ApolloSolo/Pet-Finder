@@ -5,6 +5,9 @@ let accessToken;
 const myLocation = document.querySelector("#my-location");
 const zipForm = document.querySelector("#zip-form");
 
+const cities = []
+let cityGeoJSON = [];
+
 const fetchAccessToken = async () => {
   const params = new URLSearchParams();
   params.append("grant_type", "client_credentials");
@@ -19,7 +22,6 @@ const fetchAccessToken = async () => {
   );
   const data = await petfinderRes.json();
   accessToken = data.access_token
-  console.log(accessToken);
 };
 
 if(!accessToken){
@@ -34,7 +36,13 @@ const fetchPets = (location) => {
   }).then((res) => {
       if(res){
           res.json().then((data) => {
-              console.log(data);
+              for(let i = 0; i < data.animals.length; i++){
+                let city = data.animals[i].contact.address.city;
+                cities.push(city);
+              }
+              
+              toGeoJSON();
+              
           })
       }
   })
@@ -76,3 +84,52 @@ const zipFormHandler = function(e){
 myLocation.addEventListener('click', myLocationHandler);
 
 zipForm.addEventListener('submit', zipFormHandler);
+
+/******** MAP **********/
+
+async function cityToGeoData(city) {
+    const respons = await axios.get(
+      `https://api.openweathermap.org/geo/1.0/direct?q=${city},US&appid=c20b708b2952fc5492619c70affe0677`
+    );
+    if (respons) {
+      const lat = respons.data[0].lat;
+      const lon = respons.data[0].lon;
+      const geoData = [lon, lat];
+      return geoData;
+    } else {
+      alert("Error with geo location");
+    }
+  };
+
+async function toGeoJSON() {
+    for(let i = 0; i < cities.length; i++){
+        let data = await cityToGeoData(cities[i]);
+        
+        cityGeoJSON.push(data);
+        //console.log(data);
+
+        if(i === cities.length - 1){
+          buildMap();
+        }
+    }
+    //console.log(cityGeoJSON);
+}
+
+function buildMap(){
+  mapboxgl.accessToken = 'pk.eyJ1IjoiYXBwc29sbyIsImEiOiJjbDA5dmptYWowaGcwM2lwOTY0dGxlOWp3In0.kulAfdlLVedrwX0Yh0qruQ';
+
+const map = new mapboxgl.Map({
+    container: 'map', // container ID
+    style: 'mapbox://styles/mapbox/streets-v11', // style URL
+    center: [-80.9, 35.2], // starting position [lng, lat]
+    zoom: 6 // starting zoom
+});
+
+// Create a default Marker and add it to the map.
+
+  for(let i = 0; i < cityGeoJSON.length; i++){
+    let marker1 = new mapboxgl.Marker({ color: 'rgb(20, 200, 225)' })
+    .setLngLat(cityGeoJSON[i])
+    .addTo(map);
+  }
+}
